@@ -1,1 +1,2 @@
 *.axl linguist-detectable=false
+*.spec linguist-detectable=false
