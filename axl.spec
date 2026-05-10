@@ -116,7 +116,7 @@ Agent behavioral rules scoped to this project.
   Prefix semantics:
     >   DIRECTIVE           always follow; override agent defaults
     ?   CONDITION => ACTION conditional; agent evaluates before acting
-    !   DIRECTIVE           one-time; agent marks executed by changing ! to !!
+    !   DIRECTIVE           one-time; agent appends to @done-ctx on execution (do NOT mutate @ctx)
     -   NOTE                informational; agent reads, does not act
 
   Sub-sections via >>SECTIONNAME.
@@ -137,6 +137,25 @@ Structured event log. Append only; never edit or delete existing lines.
     ERR    error encountered
     NOTE   observation or decision rationale
     WARN   non-fatal anomaly
+
+### @done-ctx  [opt, append-only]
+Audit log for executed one-time @ctx directives. Append only; never edit or delete.
+Keeps @ctx immutable — one-time directives are never modified in-place.
+
+  Format:  @YYYYMMDDTHHMM:AGENT_ID:directive text (verbatim copy from @ctx)
+
+  Rules:
+  - When an agent executes a ! directive from @ctx, it appends the directive
+    verbatim to @done-ctx with timestamp and agent ID
+  - @ctx source line is NEVER modified (no !! mutation)
+  - Before executing any ! directive, agent checks @done-ctx for a matching
+    directive text; if found, skips execution (idempotent)
+  - If the same ! directive appears in @ctx multiple times, each is tracked
+    independently by its full text; duplicates are executed once each
+
+  Example:
+    @done-ctx
+    @20250510T0900:claude-sonnet-4:check $shared::ref>>urls for latest API docs
 
 ### @ref  [opt]
 External reference data, grouped by >>SECTIONNAME.
@@ -300,7 +319,7 @@ TYPE tokens: PARSE  MISSING  CONFLICT  LOCK  CIRCULAR  VERSION  CONSTRAINT  UNKN
   - @meta.name: may be ~ if id is self-explanatory
   - @meta.crc:  omit if integrity checking not needed
   - All opt fields: may be omitted entirely (not just set to ~)
-  - @ctx, @hook, @type, @diff, @fence, @lock, @err: all optional; omit freely
+  - @ctx, @hook, @type, @diff, @fence, @lock, @err, @done-ctx: all optional; omit freely
 
 ##──────────────────────────────────────────────────────
 ## 6. VERSIONING AND MIGRATION
@@ -331,6 +350,7 @@ On receiving instruction to load this spec:
   5. Parse all blocks; preserve unknown blocks verbatim.
   6. Resume work: @state.focus → @state.next_act → highest-priority WIP @plan task.
   7. Register @ctx directives and @hook triggers.
+  8. Load @done-ctx; build a set of already-executed ! directive texts for deduplication.
 
 On each meaningful action:
   a. Update @state fields (focus, last_act, next_act, err)
@@ -339,6 +359,8 @@ On each meaningful action:
   d. Set @meta.modified = !NOW; add self to @meta.agents if new
   e. Recompute @meta.crc if field is present
   f. Evaluate and fire applicable @hook events
+  g. For any ! directive being executed: check @done-ctx first; if not present,
+     execute and append to @done-ctx; if already present, skip silently
 
 On session end:
   - Fire session:end hooks
@@ -350,7 +372,8 @@ Absolute rules:
   - NEVER expand AXL content to Markdown prose unless explicitly asked
   - NEVER reorder blocks or remove comments
   - NEVER store secret values inline; use *ENV_VAR_NAME references only
-  - NEVER hard-delete @plan tasks or @log entries
+  - NEVER hard-delete @plan tasks, @log entries, or @done-ctx entries
+  - NEVER mutate @ctx source lines (especially ! directives); use @done-ctx instead
   - On parse error: write @err entry, set @state.err, continue with valid content
 
 ##──────────────────────────────────────────────────────
@@ -418,6 +441,9 @@ Absolute rules:
   @20250401T1000:cursor-agent:ACT:project init; Railway + Postgres provisioned
   @20250510T1310:claude-sonnet-4:ACT:deployed /orders to staging; tests pass
   @20250510T1435:claude-sonnet-4:ERR:stripe webhook HMAC mismatch in staging
+
+  @done-ctx
+  @20250401T1000:cursor-agent:check $shared::ref>>urls for latest API docs
 
   @ref
   >>urls

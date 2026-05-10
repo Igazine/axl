@@ -107,6 +107,7 @@ Pipe (`|`) separates list elements inline: `tags: api|typescript|postgres`
 | `@plan` | no | Task list in `id:STATUS:PRIORITY:title[:notes]` format |
 | `@ctx` | no | Behavioral directives, conditional rules, one-time instructions |
 | `@log` | yes | Append-only structured event log |
+| `@done-ctx` | no | Append-only audit log of executed one-time `@ctx` directives |
 | `@ref` | no | URLs, filesystem paths, environment variable names, glossary |
 
 ### Modularity blocks
@@ -153,9 +154,11 @@ Tasks are grouped with `>>SECTIONNAME` lines. Agents update status in-place and 
 ```
 >  DIRECTIVE           — always follow
 ?  CONDITION => ACTION — conditional; evaluated before each action
-!  DIRECTIVE           — one-time; agent marks executed with !!
+!  DIRECTIVE           — one-time; agent appends to @done-ctx on execution, then skips on repeat
 -  NOTE                — informational; agent reads but does not act
 ```
+
+One-time directives (`!`) are never mutated in `@ctx`. Instead, agents append the executed directive verbatim to `@done-ctx` with a timestamp and agent ID. On subsequent sessions, agents check `@done-ctx` before executing any `!` directive — if it's already there, it's skipped. This keeps `@ctx` immutable and makes one-time execution auditable.
 
 Built-in condition tokens: `task:done` `task:blocked` `task:added` `state:changed` `session:start` `session:end` `file:written` `import:missing` `err:raised` `lock:conflict`
 
