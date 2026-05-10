@@ -4,6 +4,54 @@
 # Not a Markdown replacement. Optimized for inter-agent memory and project continuity.
 
 ##──────────────────────────────────────────────────────
+## 0. COMMON MISTAKES — read this first
+##──────────────────────────────────────────────────────
+# These are the most frequent errors made by models reading this spec.
+# Each one has caused incorrect output in real sessions. Memorize them.
+
+# MISTAKE 1 — Writing !NOW to disk
+#   WRONG:   modified: !NOW
+#   CORRECT: modified: @20250510T1435
+#   !NOW is a shorthand for use in prompts and spec examples ONLY.
+#   It is NEVER valid in a .axl file written to disk.
+#   Every model writing an .axl file MUST replace ALL !NOW tokens
+#   with the actual current datetime before saving. No exceptions.
+
+# MISTAKE 2 — Deleting or reordering @plan tasks
+#   WRONG:   removing a DONE task to "clean up" the plan
+#   CORRECT: tasks are never deleted; set status SKIP with a note if needed
+#   @plan is an append-only record. Reordering is also forbidden.
+#   Agents update STATUS in-place only.
+
+# MISTAKE 3 — Deleting @log entries
+#   WRONG:   truncating @log to save space
+#   CORRECT: use @logref to point to an external archive file
+#   @log is append-only. If it grows too large, rotate via @logref.
+#   Never delete entries inline.
+
+# MISTAKE 4 — Mutating @ctx source lines
+#   WRONG:   changing "! check docs on session start" to "!! check docs on session start"
+#   CORRECT: append the executed directive to @done-ctx verbatim; leave @ctx unchanged
+#   @ctx is a permanent declaration. @done-ctx is the execution record.
+
+# MISTAKE 5 — Storing secret values inline
+#   WRONG:   db_url: :postgres://user:password@host/db
+#   CORRECT: db_url: *DATABASE_URL
+#   Secret values are NEVER stored in .axl files.
+#   Use *ENV_VAR_NAME to reference the name of the variable only.
+
+# MISTAKE 6 — Inventing tasks or content during markdown conversion
+#   WRONG:   adding tasks that seemed implied but weren't written in the source
+#   CORRECT: only extract content explicitly present in the source files
+#   If uncertain, add a # comment flagging the ambiguity. Never fill gaps silently.
+
+# MISTAKE 7 — Wrapping output in markdown fences
+#   WRONG:   ```axl\n@meta\n...```
+#   CORRECT: @meta\n...
+#   AXL files are plain text. Never wrap in markdown code fences.
+#   This applies to all tool output and file writes.
+
+##──────────────────────────────────────────────────────
 ## 1. SYNTAX FUNDAMENTALS
 ##──────────────────────────────────────────────────────
 

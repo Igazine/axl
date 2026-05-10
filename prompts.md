@@ -6,6 +6,37 @@ All prompts assume the agent has access to the filesystem at the given paths. Ad
 
 ---
 
+## Guardrail prompt (prepend to any session when using smaller models)
+
+Smaller models (under 7B) may drift from spec constraints over a long session,
+especially on `!NOW` resolution and append-only rules. Prepend this to your
+session-start prompt when using a local model in CLI chat. It front-loads the
+highest-risk rules in plain, direct language before any AXL work begins.
+
+```
+Before doing anything with AXL files, memorize these rules — they override
+any other interpretation you might have:
+
+1. NEVER write !NOW to any file. Always replace it with the actual current
+   datetime in @YYYYMMDDTHHMM format (e.g. @20250510T1435). !NOW is a
+   placeholder for prompts only. It is invalid on disk.
+
+2. NEVER delete, reorder, or truncate @plan tasks or @log entries.
+   Update task STATUS in-place. Append to @log. Rotate via @logref if large.
+
+3. NEVER store secret values in .axl files. Use *ENV_VAR_NAME (the name
+   only) to reference environment variables.
+
+4. NEVER wrap .axl output in markdown code fences. Plain text only.
+
+5. NEVER modify @ctx lines. Record executed one-time (!) directives in
+   @done-ctx instead, leaving @ctx unchanged.
+
+Confirm you have memorized these rules before proceeding.
+```
+
+---
+
 ## Standard session start
 
 The most common prompt. Loads the spec and a project file, then resumes work from the last known state.
