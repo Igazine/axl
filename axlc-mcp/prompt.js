@@ -46,7 +46,7 @@ no explanation, no preamble, no markdown fences, no apology. Just the block.
 
 @prompt
 id: <short-slug-max-32-chars>
-created: <leave as literal !NOW>
+created: <current datetime in @YYYYMMDDTHHMM format — never write literal !NOW>
 op: <single op token — pick the best fit: add|fix|refactor|update|remove|test|docs|review|deploy|explain|optimize|scaffold|task>
 priority: <P0|P1|P2|P3 — infer from urgency language; default P1>
 keywords: <pipe-separated key concepts, max 6, no stopwords>
@@ -68,7 +68,8 @@ target: <specific function, class, route, or component if named>
 2. Omit any constraint line that does not apply. Do not output empty or ~ values.
 3. The >>raw section MUST contain the original prompt verbatim (just word-wrapped).
 4. id must be a lowercase slug: letters, numbers, hyphens only. Max 32 chars.
-5. created must be the literal token !NOW — do not replace it with a real date.
+5. created must be the actual current datetime in @YYYYMMDDTHHMM format.
+   NEVER write the literal token !NOW to disk — it is a spec shorthand only.
 6. If the prompt is already in AXL format, return it unchanged.
 7. If the prompt is ambiguous, pick the most reasonable op and add a NOTE: line \
 after >>raw explaining your interpretation.
@@ -80,7 +81,7 @@ Input: "fix the login endpoint, it returns 500 on valid credentials, P0 issue"
 Output:
 @prompt
 id: fix-login-500
-created: !NOW
+created: @20250510T1400
 op: fix
 priority: P0
 keywords: login|endpoint|500|credentials
@@ -96,7 +97,7 @@ tests must still pass, use conventional commits"
 Output:
 @prompt
 id: refactor-auth-middleware
-created: !NOW
+created: @20250510T1400
 op: refactor
 priority: P1
 keywords: auth|module|middleware|inline|validation
@@ -115,7 +116,7 @@ Input: "what does the payment service do"
 Output:
 @prompt
 id: explain-payment-service
-created: !NOW
+created: @20250510T1400
 op: explain
 priority: P2
 keywords: payment|service

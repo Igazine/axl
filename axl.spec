@@ -30,7 +30,11 @@
   id-ref       →  key: $other-task-id
   list         →  key: a|b|c              (sigils apply per element: :url1|:url2)
   empty/null   →  key: ~
-  computed now →  key: !NOW               (agent replaces with @YYYYMMDDTHHMM on write)
+  computed now →  key: !NOW               (MUST be replaced with @YYYYMMDDTHHMM before writing to disk)
+                                          (!NOW is a draft-time shorthand only — it is NEVER valid
+                                          in a file on disk. Any model writing an .axl file is
+                                          responsible for resolving ALL !NOW tokens to the actual
+                                          current datetime before the file is saved.)
   secret-ref   →  key: *ENV_VAR_NAME      (name only; never store actual secrets)
 
 # ESCAPING (required when literal chars would be misread)
@@ -402,7 +406,10 @@ On each meaningful action:
   a. Update @state fields (focus, last_act, next_act, err)
   b. Update @plan task STATUS in-place (never reorder)
   c. Append structured entry to @log (ACT/ERR/NOTE/WARN prefix)
-  d. Set @meta.modified = !NOW; add self to @meta.agents if new
+  d. Resolve ALL !NOW tokens to the actual current datetime (@YYYYMMDDTHHMM)
+     before writing — including @meta.modified and any other field containing !NOW.
+     !NOW MUST NOT appear in any file written to disk. It is a shorthand for
+     use in prompts and spec examples only.
   e. Recompute @meta.crc if field is present
   f. Evaluate and fire applicable @hook events
   g. For any ! directive being executed: check @done-ctx first; if not present,
@@ -415,6 +422,7 @@ On session end:
   - Prefer .axlp patch files for large files with small changes
 
 Absolute rules:
+  - NEVER write !NOW to disk — always resolve to @YYYYMMDDTHHMM before saving
   - NEVER expand AXL content to Markdown prose unless explicitly asked
   - NEVER reorder blocks or remove comments
   - NEVER store secret values inline; use *ENV_VAR_NAME references only

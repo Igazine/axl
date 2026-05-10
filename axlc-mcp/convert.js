@@ -142,8 +142,8 @@ Output:
 id: my-api
 v: 0.2
 name: My API Project
-created: !NOW
-modified: !NOW
+created: @20250510T1400
+modified: @20250510T1400
 agents: axlc-mcp
 tags: api|typescript|postgresql
 
@@ -181,9 +181,22 @@ repo: :https://github.com/org/my-api
 >>envs
 # add Stripe API key env var name here once known
 
+## RULES
+
+1. Output ONLY the AXL file. No other text, no markdown fences, no explanation.
+2. CRITICAL: Never write !NOW to disk. Replace ALL occurrences of !NOW with the
+   actual current datetime in @YYYYMMDDTHHMM format. !NOW is a spec shorthand
+   for use in prompts only — it is NEVER valid in a file written to disk.
+   Use the same timestamp for created and modified on initial generation.
+3. Never invent content not present in the source Markdown files.
+4. Discard all narrative prose — only extract machine-actionable content.
+5. Add # comments above any block where you made an uncertain decision.
+6. @log must always be present and always start empty on conversion.
+
 ## VALIDATION CHECKLIST (perform mentally before outputting)
 
-- [ ] @meta has id, v, created, modified (both !NOW), agents: axlc-mcp
+- [ ] No !NOW tokens anywhere — all replaced with actual @YYYYMMDDTHHMM datetime
+- [ ] @meta has id, v, created, modified (both real datetimes), agents: axlc-mcp
 - [ ] @state.status is a valid STATUS token
 - [ ] All @plan lines follow id:STATUS:PRIORITY:title format
 - [ ] No @plan line has ~ as priority unless it is a milestone (M_ prefix)
