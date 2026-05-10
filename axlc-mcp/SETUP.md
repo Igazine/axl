@@ -190,7 +190,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
   "mcpServers": {
     "axlc": {
       "command": "node",
-      "args": ["/absolute/path/to/axl/axlc-mcp/src/index.js"],
+      "args": ["/absolute/path/to/axl/axlc-mcp/index.js"],
       "cwd": "/absolute/path/to/axl/axlc-mcp"
     }
   }
@@ -202,7 +202,7 @@ Restart Claude Desktop. You'll see `axlc` in the MCP tools list.
 ### Claude Code
 
 ```bash
-claude mcp add axlc node /absolute/path/to/axl/axlc-mcp/src/index.js
+claude mcp add axlc node /absolute/path/to/axl/axlc-mcp/index.js
 ```
 
 Or add to your project's `.claude/mcp.json`:
@@ -212,7 +212,7 @@ Or add to your project's `.claude/mcp.json`:
   "servers": {
     "axlc": {
       "command": "node",
-      "args": ["./axlc-mcp/src/index.js"],
+      "args": ["./axlc-mcp/index.js"],
       "cwd": "./axlc-mcp"
     }
   }
@@ -228,7 +228,7 @@ Add to `.cursor/mcp.json` in your project root:
   "mcpServers": {
     "axlc": {
       "command": "node",
-      "args": ["/absolute/path/to/axl/axlc-mcp/src/index.js"]
+      "args": ["/absolute/path/to/axl/axlc-mcp/index.js"]
     }
   }
 }
@@ -239,7 +239,7 @@ Add to `.cursor/mcp.json` in your project root:
 The server runs on **stdio** transport (the MCP standard). Start it with:
 
 ```bash
-node /path/to/axlc-mcp/src/index.js
+node /path/to/axlc-mcp/index.js
 ```
 
 It reads JSON-RPC from stdin, writes to stdout. Stderr is used for log messages.
@@ -319,10 +319,10 @@ Start the server manually and send a test message:
 
 ```bash
 cd axlc-mcp
-node src/index.js &
+nodeindex.js &
 
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"compress_prompt","arguments":{"prompt":"refactor the auth module to use middleware, tests must still pass"}}}' \
-  | node src/index.js
+  | nodeindex.js
 ```
 
 Or, if your harness is connected, just ask your agent:
