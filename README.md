@@ -305,9 +305,32 @@ Agents parsing v0.1 files must accept the older pipe-delimited plan and log form
 
 ---
 
-## Prompt Examples
+## Model compatibility
 
-Open [prompts.md](prompts.md) for ready-to-use prompts for loading AXL into agents, coding assistants, and orchestration harnesses
+AXL relies on a model's ability to follow structured format rules consistently across a session. Compatibility scales roughly with model size and instruction-following capability.
+
+| Model tier | Examples | AXL suitability |
+|------------|---------|----------------|
+| Large cloud models | Claude Sonnet/Opus, GPT-4o, Gemini 2.5 Pro | ✅ Excellent — reliable format adherence, handles long sessions well |
+| Mid local (14B) | Qwen 2.5 Coder 14B, Qwen 3 14B | ✅ Good — solid instruction following; occasional drift on long sessions |
+| Mid local (7–9B) | Qwen 2.5 Coder 7B, Qwen 3 9B | ⚠️ Adequate — use the guardrail prompt; keep sessions shorter |
+| Small local (3–4B) | Gemma4 E4B, Qwen 2.5 3B | ⚠️ Marginal — frequent `!NOW` and format drift; guardrail prompt helps |
+| Tiny (<3B) | Phi-3 mini, Gemma 2B | ❌ Not recommended — insufficient instruction-following for reliable AXL output |
+
+**Known issues with smaller models:**
+
+- Writing literal `!NOW` to disk instead of the actual datetime — see Section 0 of the spec and the guardrail prompt in `prompts.md`
+- Treating `@log` as editable rather than append-only
+- Wrapping `.axl` output in markdown code fences
+
+**Mitigations for smaller models:**
+
+- Always prepend the guardrail prompt from `prompts.md` before any AXL session
+- Keep sessions short and focused — drift increases with context length
+- Use the MCP pipeline (`axlc-mcp`) where the system prompt is injected fresh on every call, bypassing session drift entirely
+- For the `convert_markdown` tool specifically, use the `model` override parameter to route to a larger model even if your default is small
+
+**MCP pipeline note:** The `axlc-mcp` server injects the AXL spec as a system prompt on every single call. This means model drift across a long session is irrelevant — each call is stateless and spec-aware. For production use, the MCP pipeline is more reliable than CLI chat with any model size.
 
 ---
 
