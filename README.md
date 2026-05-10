@@ -301,6 +301,12 @@ Agents parsing v0.1 files must accept the older pipe-delimited plan and log form
 
 ---
 
+## Prompt Examples
+
+Open [prompts.md](prompts.md) for ready-to-use prompts for loading AXL into agents, coding assistants, and orchestration harnesses
+
+---
+
 ## License
 
 MIT
