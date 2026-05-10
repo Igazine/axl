@@ -1,0 +1,211 @@
+##──────────────────────────────────────────────────────
+## FILE: project.axl — full project file (v0.2)
+##──────────────────────────────────────────────────────
+
+@import
+team: ./team.axl::ref
+types: ./project.axlt
+
+@meta
+id: ecom-api
+v: 0.2
+created: @20250401
+modified: @20250510T1435
+agents: claude-sonnet-4|cursor-agent
+tags: api|typescript|postgres|payments
+
+@state
+status: WIP
+focus: stripe webhook HMAC failure in staging
+blockers: $stripe-wh
+last_act: ACT:deployed /orders; all unit tests pass
+next_act: debug HMAC mismatch; check *STRIPE_WH_SECRET value in Railway dashboard
+err: ~
+>>mem
+node_ver: #22
+db_ver: postgres-16
+staging_url: :https://ecom-api-staging.up.railway.app
+last_deploy: @20250510T1310
+coverage: #84
+open_prs: #3
+stripe_wh_secret: *STRIPE_WH_SECRET
+
+@plan
+>>infra
+infra:DONE:P1:Railway project + Postgres + env vars
+ci:DONE:P1:GitHub Actions lint/test/deploy to staging
+domain:DONE:P1:Custom domain + TLS cert
+>>auth
+auth-jwt:DONE:P0:JWT issue/verify middleware
+auth-refresh:DONE:P0:Refresh token rotation
+auth-revoke:DONE:P1:Token revocation + blocklist table
+>>products
+products-crud:DONE:P1:CRUD endpoints /products
+products-img:WIP:P2:Image upload to S3:upload OK\; URL generation broken
+products-search:TODO:P2:Full-text search via pg_trgm
+>>orders
+orders-create:DONE:P0:POST /orders with inventory check
+orders-list:DONE:P1:GET /orders with pagination + filters
+orders-cancel:TODO:P1:PATCH /orders/:id/cancel + refund trigger
+>>payments
+stripe-intent:DONE:P0:Create PaymentIntent on order creation
+stripe-wh:BLOCK:P0:Stripe webhook handler:HMAC sig check fails in staging
+stripe-refund:TODO:P0:Refund via Stripe API:depends on $orders-cancel
+>>milestones
+M_beta:WIP:~:Beta — payments fully functional
+M_launch:TODO:~:Public launch
+
+@ctx
+>>stack
+> Node 22, TypeScript 5.4 strict, Express 5
+> PostgreSQL 16 via pg (no ORM); migrations via node-pg-migrate
+> Zod for all request validation; Stripe SDK v16
+>>workflow
+> conventional commits: feat|fix|chore|docs
+> all routes need Zod schema + integration test before DONE
+> never mark P0 task DONE without staging verification
+? task:done AND task starts with stripe => verify in Railway staging logs
+? task:blocked => add blocker to @state.blockers and set @state.err
+? task:added => ensure priority assigned (not ~) unless milestone
+- coverage threshold: 80% lines; track in >>mem coverage
+>>secrets
+- reference by *ENV_VAR_NAME only; never inline
+- vars: *STRIPE_WH_SECRET *DATABASE_URL *JWT_SECRET
+
+@hook
+task:done    => > append ACT:task-id marked DONE to @log
+task:blocked => > set @state.status BLOCK if any P0 task is blocked
+session:end  => > append NOTE:session summary to @log; update @state.next_act
+err:raised   => > set @state.err to error description
+
+@log
+@20250401T1000:cursor-agent:ACT:project init; Railway + Postgres provisioned
+@20250404T1420:claude-sonnet-4:ACT:auth module complete; JWT + refresh + revocation
+@20250415T0915:claude-sonnet-4:ACT:products CRUD done
+@20250415T0916:claude-sonnet-4:WARN:image URL generation broken in products-img
+@20250422T1600:cursor-agent:ACT:orders-create and orders-list complete; staging OK
+@20250508T1100:claude-sonnet-4:ACT:stripe-intent complete; PaymentIntent on order
+@20250510T1310:claude-sonnet-4:ACT:deployed /orders to staging; all tests pass
+@20250510T1435:claude-sonnet-4:ERR:stripe webhook HMAC mismatch in staging
+
+@ref
+>>urls
+stripe-wh-docs: :https://stripe.com/docs/webhooks/signatures
+railway-env: :https://docs.railway.app/develop/variables
+>>paths
+src: ./src
+routes: ./src/routes
+migrations: ./migrations
+tests: ./src/__tests__
+env-example: ./.env.example
+>>envs
+stripe_wh: *STRIPE_WH_SECRET
+db: *DATABASE_URL
+jwt: *JWT_SECRET
+>>gloss
+HMAC: hash-based message authentication code used by Stripe to sign webhook payloads
+PI: PaymentIntent (Stripe object)
+WH: webhook
+
+
+##──────────────────────────────────────────────────────
+## FILE: session-patch.axlp — sparse patch from one session
+## (agent writes this instead of rewriting full file)
+##──────────────────────────────────────────────────────
+
+@diff
+target: ./project.axl
+base_modified: @20250510T1435
+
+STATUS  plan::stripe-wh: DONE
+NOTE    plan::stripe-wh: fixed — STRIPE_WH_SECRET was URL-encoded in Railway; decoded on read
+STATUS  plan::stripe-refund: WIP
+SET     state::focus: implementing refund trigger in /orders/:id/cancel
+SET     state::next_act: POST /v1/refunds in stripe-refund route; wire to orders-cancel
+SET     state::err: ~
+SET     state::blockers: ~
+SET     meta::modified: !NOW
+APPEND  log: !NOW:claude-sonnet-4:ACT:stripe-wh fixed; HMAC now validates in staging
+APPEND  log: !NOW:claude-sonnet-4:ACT:stripe-refund moved to WIP
+
+
+##──────────────────────────────────────────────────────
+## FILE: project.axlt — type library (importable)
+##──────────────────────────────────────────────────────
+
+# Type definitions for ecom-api project.
+# @import as: types: ./project.axlt
+
+@type coverage
+>>fields
+value: int min:0 max:100
+
+@type deploy_url
+>>fields
+value: url nonempty
+
+@type open_prs
+>>fields
+value: int min:0
+
+
+##──────────────────────────────────────────────────────
+## FILE: team.axl — shared read-only reference (imported)
+##──────────────────────────────────────────────────────
+
+@meta
+id: team-shared
+v: 0.2
+created: @20250401
+modified: @20250401T0900
+agents: cursor-agent
+tags: shared|reference
+
+@export
+stripe-docs: :https://stripe.com/docs
+railway-docs: :https://docs.railway.app
+pg-migrate-docs: :https://github.com/salsita/node-pg-migrate
+
+@ref
+>>urls
+stripe: :https://stripe.com/docs
+railway: :https://docs.railway.app
+>>gloss
+monorepo: single repo containing all services for this project
+
+
+##──────────────────────────────────────────────────────
+## FILE: axl-prompts.md — loader prompts for agents/harnesses
+##──────────────────────────────────────────────────────
+
+# AXL loader prompts
+# Copy the relevant prompt, fill in paths, send to agent.
+
+## Standard session start
+Load the AXL specification from {path/to/axl.spec} and read it fully.
+Then load {path/to/project.axl}, process all blocks including @import and @mount.
+Resume from @state.focus and continue the task indicated by @state.next_act.
+After each meaningful action: update @state, @plan task statuses, append to @log.
+Write the updated file (or a .axlp patch) to disk before ending the session.
+
+## Read-only review
+Load {path/to/axl.spec}, then load {path/to/project.axl} in read-only mode.
+Summarize: project status, current blockers, next recommended actions, recent @log.
+Do not write any changes.
+
+## New project bootstrap
+Load {path/to/axl.spec}.
+Create a new .axl file at {path/to/new-project.axl} for: {project description}.
+Populate @meta, @state, and @plan based on the description.
+Confirm before writing to disk.
+
+## Agent handoff
+Load {path/to/axl.spec}, then load {path/to/project.axl}.
+You are taking over from the previous agent. Read @log to understand history.
+Read @state.focus and @state.next_act to understand what was in progress.
+Confirm your understanding in one short paragraph, then proceed or ask how.
+
+## Apply a patch
+Load {path/to/axl.spec}.
+Apply the patch file at {path/to/session-patch.axlp} to {path/to/project.axl}.
+Validate base_modified matches before applying. Report any conflicts to @err.
