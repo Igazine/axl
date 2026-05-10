@@ -39,7 +39,7 @@ The main agent receives the compressed block instead of the verbose original. It
 ## 1. Install
 
 ```bash
-git clone https://github.com/you/axl
+git clone https://github.com/Igazine/axl
 cd axl/axlc-mcp
 npm install
 ```
