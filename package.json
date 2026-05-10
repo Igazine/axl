@@ -1,0 +1,16 @@
+{
+  "name": "axlc-mcp",
+  "version": "0.1.0",
+  "description": "MCP server — compresses human prompts into AXL @prompt blocks",
+  "type": "module",
+  "bin": {
+    "axlc-mcp": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3"
+  }
+}

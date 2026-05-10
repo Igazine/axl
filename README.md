@@ -128,6 +128,10 @@ Pipe (`|`) separates list elements inline: `tags: api|typescript|postgres`
 | `@fence` | Verbatim content blocks (system prompts, code snippets, templates) |
 | `@lock` | Ephemeral concurrency guard for shared files |
 | `@err` | Structured error and conflict log, separate from `@log` |
+| `@logref` | External log file reference and rotation policy |
+| `@prompt` | Compressed human instruction, produced by `axlc-mcp` |
+
+> **Note on harness-specific config:** AXL deliberately has no block for harness instructions (Cursor rules, `CLAUDE.md`, Aider flags, etc.). Those belong in each harness's own native config files — they are read once at session start by one harness, so storing them in a shared project file would burn tokens on every context load for zero benefit to any other consumer. If you need a single source of truth that *generates* those native files, that's a separate tooling concern outside the AXL format.
 
 ---
 

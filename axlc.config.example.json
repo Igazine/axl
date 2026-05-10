@@ -1,0 +1,74 @@
+{
+  "_comment": "axlc-mcp configuration. Copy to axlc.config.json and edit.",
+
+  "_providerExamples": {
+
+    "ollama_local": {
+      "provider":    "ollama",
+      "baseUrl":     "http://localhost:11434",
+      "model":       "qwen2.5:3b",
+      "temperature": 0.1,
+      "maxTokens":   512
+    },
+
+    "lmstudio": {
+      "provider":    "openai",
+      "baseUrl":     "http://localhost:1234",
+      "model":       "lmstudio-community/Qwen2.5-3B-Instruct-GGUF",
+      "apiKey":      "lm-studio",
+      "temperature": 0.1,
+      "maxTokens":   512
+    },
+
+    "openai": {
+      "provider":    "openai",
+      "baseUrl":     "https://api.openai.com",
+      "model":       "gpt-4o-mini",
+      "apiKey":      "sk-...",
+      "temperature": 0.1,
+      "maxTokens":   512
+    },
+
+    "anthropic": {
+      "provider":    "anthropic",
+      "model":       "claude-haiku-4-5-20251001",
+      "apiKey":      "sk-ant-...",
+      "temperature": 0.1,
+      "maxTokens":   512
+    },
+
+    "groq_openai_compat": {
+      "provider":    "openai",
+      "baseUrl":     "https://api.groq.com/openai",
+      "model":       "llama-3.1-8b-instant",
+      "apiKey":      "gsk_...",
+      "temperature": 0.1,
+      "maxTokens":   512
+    },
+
+    "custom_endpoint": {
+      "provider":      "custom",
+      "url":           "http://localhost:8080/generate",
+      "headers":       { "X-My-Key": "value" },
+      "requestTemplate": {
+        "system": "{{SYSTEM}}",
+        "user":   "{{USER}}",
+        "config": { "max_tokens": 512 }
+      },
+      "responsePath":  "output.text"
+    }
+  },
+
+  "provider":    "ollama",
+  "baseUrl":     "http://localhost:11434",
+  "model":       "qwen2.5:3b",
+  "apiKey":      null,
+  "temperature": 0.1,
+  "maxTokens":   512,
+  "timeoutMs":   30000,
+
+  "specPath":    "./axl.spec",
+
+  "transport":   "stdio",
+  "httpPort":    3333
+}

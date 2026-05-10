@@ -157,6 +157,32 @@ Keeps @ctx immutable — one-time directives are never modified in-place.
     @done-ctx
     @20250510T0900:claude-sonnet-4:check $shared::ref>>urls for latest API docs
 
+### @prompt  [opt, repeatable]
+Compressed representation of a human instruction, produced by axlc-mcp before
+the prompt reaches the main model. Agents read @prompt blocks as task input.
+
+  id:           ro! slug — unique within file
+  created:      ro! !NOW — set by compiler on creation
+  op:           req op token — intent classification
+  priority:     opt P0–P3 (default P1)
+  keywords:     opt pipe-list of key concepts (max 6)
+  target:       opt specific module, function, class, or route
+  scope:        opt filename or module scope
+  tests:        opt ?1 — tests must pass
+  commit:       opt ?1 — agent should commit result
+  commit_style: opt conventional | freeform
+  breaking:     opt ?0 — must not introduce breaking changes
+  type_safe:    opt ?1 — strict types required
+  review_first: opt ?1 — show diff/plan before applying
+  >>raw         verbatim original prompt (word-wrapped at 80 chars)
+
+  Op tokens: add|fix|refactor|update|remove|test|docs|review|deploy|explain|optimize|scaffold|task
+
+  Agents consume @prompt blocks in priority order, highest first.
+  After acting on a @prompt block: move it to @done-ctx equivalent by
+  appending a log entry and setting a status (or deleting if project policy
+  allows; see log_max rotation rules).
+
 ### @ref  [opt]
 External reference data, grouped by >>SECTIONNAME.
   >>urls   — :url sigil values
@@ -238,7 +264,27 @@ Agents validate matching fields if @type is present; skip validation if absent.
   Base types:  str  int  bool  date  slug  list  ref  url
   Constraints: min:N  max:N  enum:a|b|c  nonempty
 
-### @diff  [primary block in .axlp patch files]
+### @logref  [opt]
+Reference to an external log file. When present, @log in this file acts as a
+rolling window only; full history lives in the referenced file.
+
+  file:     path to the external .axl log file (rotated by month or size)
+  log_max:  #integer — max entries to keep in @log before rotation (default #50)
+  strategy: month (rotate monthly) | size (rotate at log_max) | never (no rotation)
+
+  Rotation behavior:
+  - When @log entry count reaches log_max, agent moves all but the last 10
+    entries to the external log file (appending), keeping a short tail in @log
+  - External log file uses identical @log format; @meta.id matches parent file
+  - If external log file does not exist, agent creates it on first rotation
+
+  Example:
+    @logref
+    file: ./logs/ecom-api-2025.axl
+    log_max: #50
+    strategy: size
+
+
 Sparse update. Apply to a target without rewriting the full file.
 Use .axlp extension for patch files.
 
