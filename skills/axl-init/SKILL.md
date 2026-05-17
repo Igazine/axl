@@ -1,6 +1,6 @@
 ---
 name: axl-init
-description: Initializes AXL (Agent eXchange Language) for a project. Loads the spec, reads or creates the project .axl file, and activates persistent state saving behavior for the session. Invoke as: axl-init [filename.axl] — defaults to project.axl if no filename given.
+description: Initializes AXL (Agent eXchange Language) for a project. Loads the spec, reads or creates the project .axl file, and activates persistent state saving behavior for the session. Invoke as `axl-init [filename.axl]` — defaults to project.axl if no filename given.
 ---
 
 # AXL Init
