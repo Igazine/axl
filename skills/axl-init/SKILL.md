@@ -78,7 +78,11 @@ From this point forward, for the remainder of this session, apply all of the fol
   - Use `NOTE:` for decisions or observations
   - Use `WARN:` for non-fatal issues
 - Set `@meta.modified` to the current datetime (`@YYYYMMDDTHHMM`) — never write literal `!NOW` to disk
-- If you have a session ID, write or update your entry in `@meta>>sessions` (format: `your-model-id: session-id`). Only write your own entry.
+- If you have a session ID, write or update your entry in `@meta>>sessions` (format: `your-model-id: session-id`). Only write your own entry. Check the following environment variables in order and use the first available value:
+  - Codex CLI: `$CODEX_THREAD_ID`
+  - Claude Code: `$CLAUDE_SESSION_ID`, fallback `$TERM_SESSION_ID`
+  - Any CLI on macOS: `$TERM_SESSION_ID`
+  - If none available: omit the entry entirely — never write a placeholder or generated value
 - Write the updated file to disk
 
 **After completing any @plan task:**

@@ -153,6 +153,14 @@ Project identity. Agent updates modified, agents, and >>sessions on every write.
   - Entries persist across sessions; a new session overwrites the previous entry for that agent
   - Agents must not modify other agents' session entries
 
+  Known session ID sources by harness (check env vars in order listed; use first available):
+    codex-cli:    $CODEX_THREAD_ID
+    claude-code:  $CLAUDE_SESSION_ID (unconfirmed — check $TERM_SESSION_ID as fallback)
+    cursor:       not exposed as env var; omit entry
+    aider:        not exposed; omit entry
+    generic:      $TERM_SESSION_ID (macOS terminal sessions; may be available in any CLI harness)
+  If none available: omit the entry. Never generate a fake or placeholder session ID.
+
 ### @state  [req, one per file]
 Current session memory. Agent maintains and updates freely.
   status:    req STATUS token — top-level project health

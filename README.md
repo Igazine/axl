@@ -135,6 +135,20 @@ Pipe (`|`) separates list elements inline: `tags: api|typescript|postgres`
 
 > **Note on harness-specific config:** AXL deliberately has no block for harness instructions (Cursor rules, `CLAUDE.md`, Aider flags, etc.). Those belong in each harness's own native config files — they are read once at session start by one harness, so storing them in a shared project file would burn tokens on every context load for zero benefit to any other consumer. If you need a single source of truth that *generates* those native files, that's a separate tooling concern outside the AXL format.
 
+### Known session ID environment variables
+
+Agents populate `@meta>>sessions` from environment variables. Each harness exposes its session context differently — check in the order listed and use the first available value. If none is available, omit the entry entirely.
+
+| Harness | Environment variable | Status |
+|---------|---------------------|--------|
+| Codex CLI | `$CODEX_THREAD_ID` | ✅ Confirmed |
+| Claude Code | `$CLAUDE_SESSION_ID` | ⚠️ Unconfirmed — try `$TERM_SESSION_ID` as fallback |
+| Cursor | — | ❌ Not exposed; omit entry |
+| Aider | — | ❌ Not exposed; omit entry |
+| Any CLI on macOS | `$TERM_SESSION_ID` | ⚠️ Terminal session, not agent session — usable as fallback |
+
+This table will grow as more harnesses are tested. If you discover a session ID variable for an unlisted harness, the spec's `>>sessions` section is the canonical place to record it.
+
 ---
 
 ## Task format
