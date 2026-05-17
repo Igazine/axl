@@ -1,4 +1,4 @@
-# AXL — Agent eXchange Language v0.2
+# AXL — Agent eXchange Language v0.3
 # Single specification file. Load once. All .axl files become readable/writable.
 # Token-efficient, machine-primary, text-based, cross-agent state and instruction format.
 # Not a Markdown replacement. Optimized for inter-agent memory and project continuity.
@@ -119,17 +119,27 @@
 ##──────────────────────────────────────────────────────
 
 ### @meta  [req, exactly one per file]
-Project identity. Agent updates modified and agents on every write.
+Project identity. Agent updates modified, agents, and >>sessions on every write.
   id:        ro! slug — unique project identifier
-  v:         ro  AXL spec version (currently 0.2)
+  v:         ro  AXL spec version (currently 0.3)
   name:      opt human-readable project name (may be ~)
   created:   ro! @date
-  modified:  req @date — agent sets !NOW on every write
+  modified:  req @date — agent sets current datetime on every write
   agents:    req pipe-list of agent IDs that have written this file
   tags:      opt pipe-list of topic tags
   parent:    opt $global-ref to parent project file (for sub-projects)
   crc:       opt #uint32 — CRC32 of file content excluding this line
              Agent recomputes on write. Reader may skip validation but must not corrupt.
+
+  >>sessions  (opt — agent session tracking for audit and concurrency)
+  agent-id: session-id   (one entry per agent; plain string; no sigil required)
+
+  Rules:
+  - Each agent writes or updates its own entry on first write of a session
+  - If the agent has no session ID, omit the entry entirely — never write ~ or unknown
+  - Session IDs are informational only; they are not credentials or secrets
+  - Entries persist across sessions; a new session overwrites the previous entry for that agent
+  - Agents must not modify other agents' session entries
 
 ### @state  [req, one per file]
 Current session memory. Agent maintains and updates freely.
@@ -415,7 +425,7 @@ TYPE tokens: PARSE  MISSING  CONFLICT  LOCK  CIRCULAR  VERSION  CONSTRAINT  UNKN
   - @ref:       omit if no external references
   - @log:       may start empty; first entry on first agent write
   - @meta.name: may be ~ if id is self-explanatory
-  - @meta.crc:  omit if integrity checking not needed
+  - @meta>>sessions: omit entirely if no agent has a session ID to record
   - All opt fields: may be omitted entirely (not just set to ~)
   - @ctx, @hook, @type, @diff, @fence, @lock, @err, @done-ctx: all optional; omit freely
 
@@ -423,13 +433,16 @@ TYPE tokens: PARSE  MISSING  CONFLICT  LOCK  CIRCULAR  VERSION  CONSTRAINT  UNKN
 ## 6. VERSIONING AND MIGRATION
 ##──────────────────────────────────────────────────────
 
-# CURRENT VERSION: 0.2
+# CURRENT VERSION: 0.3
+# Agents parsing v0.2 files should:
+  - Treat absence of @meta>>sessions as equivalent to an empty >>sessions section
+  - Write back in v0.3 format ONLY if user explicitly requests migration
+  - Otherwise preserve original format on rewrite (no silent upgrades)
+
 # Agents parsing v0.1 files should:
   - Accept pipe-delimited plan (|) as equivalent to colon-delimited (:)
   - Accept vars.KEY as equivalent to >>mem KEY
   - Accept pipe-delimited log as equivalent to colon-delimited log
-  - Write back in v0.2 format ONLY if user explicitly requests migration
-  - Otherwise preserve original format on rewrite (no silent upgrades)
 
 # UNKNOWN BLOCK RULE
   Agents MUST preserve unknown @BLOCKNAME blocks verbatim on any write.
@@ -441,7 +454,7 @@ TYPE tokens: PARSE  MISSING  CONFLICT  LOCK  CIRCULAR  VERSION  CONSTRAINT  UNKN
 ##──────────────────────────────────────────────────────
 
 On receiving instruction to load this spec:
-  1. Confirm understanding of AXL v0.2 format.
+  1. Confirm understanding of AXL v0.3 format.
   2. Process @import and @mount first; resolve aliases before any other block.
   3. Check @lock on any mounted file before writing.
   4. Load @type definitions (local or imported .axlt) for validation context.
@@ -458,9 +471,11 @@ On each meaningful action:
      before writing — including @meta.modified and any other field containing !NOW.
      !NOW MUST NOT appear in any file written to disk. It is a shorthand for
      use in prompts and spec examples only.
-  e. Recompute @meta.crc if field is present
-  f. Evaluate and fire applicable @hook events
-  g. For any ! directive being executed: check @done-ctx first; if not present,
+  e. Write or update own entry in @meta>>sessions if a session ID is available.
+     Only write your own entry. Never modify another agent's session entry.
+  f. Recompute @meta.crc if field is present
+  g. Evaluate and fire applicable @hook events
+  h. For any ! directive being executed: check @done-ctx first; if not present,
      execute and append to @done-ctx; if already present, skip silently
 
 On session end:
@@ -476,10 +491,11 @@ Absolute rules:
   - NEVER store secret values inline; use *ENV_VAR_NAME references only
   - NEVER hard-delete @plan tasks, @log entries, or @done-ctx entries
   - NEVER mutate @ctx source lines (especially ! directives); use @done-ctx instead
+  - NEVER modify another agent's @meta>>sessions entry
   - On parse error: write @err entry, set @state.err, continue with valid content
 
 ##──────────────────────────────────────────────────────
-## 8. COMPLETE EXAMPLE (v0.2)
+## 8. COMPLETE EXAMPLE (v0.3)
 ##──────────────────────────────────────────────────────
 
   @import
@@ -488,11 +504,14 @@ Absolute rules:
 
   @meta
   id: ecom-api
-  v: 0.2
+  v: 0.3
   created: @20250401
   modified: @20250510T1435
   agents: claude-sonnet-4|cursor-agent
   tags: api|typescript|postgres
+  >>sessions
+  claude-sonnet-4: ses_abc123xyz
+  cursor-agent:    cur_ses_789def
 
   @state
   status: WIP

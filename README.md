@@ -50,11 +50,13 @@ An `.axl` file is composed of **blocks**. Each block begins with `@BLOCKNAME` an
 ```
 @meta
 id: my-project
-v: 0.2
+v: 0.3
 created: @20250510
 modified: @20250510T1435
 agents: claude-sonnet-4
 tags: api|typescript
+>>sessions
+claude-sonnet-4: ses_abc123xyz
 
 @state
 status: WIP
@@ -280,12 +282,14 @@ examples/
 
 ## Versioning
 
-The current spec version is **0.2**. The version is declared in `@meta`:
+The current spec version is **0.3**. The version is declared in `@meta`:
 
 ```
 @meta
-v: 0.2
+v: 0.3
 ```
+
+**v0.3** adds `@meta>>sessions` — an optional sub-section for agents to record their session ID alongside their model ID. Backward compatible: v0.2 files without `>>sessions` are valid and parse cleanly.
 
 Agents parsing v0.1 files must accept the older pipe-delimited plan and log formats and must not silently upgrade format on rewrite unless explicitly instructed. Unknown blocks must always be preserved verbatim — forward compatibility is non-negotiable.
 
