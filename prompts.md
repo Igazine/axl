@@ -142,22 +142,22 @@ After a successful apply:
 
 ---
 
-## Migrate from v0.1 to v0.2
+## Migrate from v0.1 to v0.3
 
-Upgrades a v0.1-format file to the current v0.2 format. Always ask for confirmation before writing.
+Upgrades a v0.1-format file to the current v0.3 format. Always ask for confirmation before writing.
 
 ```
 Load the AXL specification from {path/to/axl.spec}.
 Then load {path/to/old-project.axl}.
 
-This file uses AXL v0.1 format. Migrate it to v0.2:
+This file uses AXL v0.1 format. Migrate it to v0.3:
 
 - Convert pipe-delimited @plan lines to colon-delimited format
 - Convert vars.KEY entries in @state to >>mem KEY entries
 - Convert pipe-delimited @log lines to @DATETIME:AGENT:PREFIX:text format
 - Add ACT/ERR/NOTE/WARN prefixes to @log entries where the type is clear;
   use NOTE as the default prefix where ambiguous
-- Update @meta.v to 0.2
+- Update @meta.v to 0.3
 - Do not change any content, statuses, task titles, or log text — format only
 
 Show me a diff or the complete converted file before writing. Ask for confirmation.

@@ -140,7 +140,7 @@ Input (ROADMAP.md):
 Output:
 @meta
 id: my-api
-v: 0.2
+v: 0.3
 name: My API Project
 created: @20250510T1400
 modified: @20250510T1400

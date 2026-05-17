@@ -591,4 +591,4 @@ Absolute rules:
   stripe_wh: *STRIPE_WH_SECRET
   db: *DATABASE_URL
 
-## END OF SPEC v0.2
+## END OF SPEC v0.3
